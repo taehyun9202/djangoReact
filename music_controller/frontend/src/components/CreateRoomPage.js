@@ -52,7 +52,6 @@ function CreateRoomPage(props) {
                 votes_to_skip: votesToSkip,
             })
         }
-        console.log(requestOptions)
         fetch('/api/update-room', requestOptions)
             .then((response) => {
                 if (response.ok) {

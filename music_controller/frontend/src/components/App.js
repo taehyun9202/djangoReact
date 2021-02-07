@@ -3,7 +3,7 @@ import { render } from 'react-dom'
 import HomePage from './HomePage'
 export default function App(props) {
     return (
-        <div className="center">
+        <div className="center" style={{width:'100wv'}}>
             <HomePage />
         </div>
     )

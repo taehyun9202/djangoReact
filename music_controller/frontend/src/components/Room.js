@@ -6,6 +6,7 @@ import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
 import { makeStyles } from '@material-ui/core/styles';
 import CreateRoomPage from './CreateRoomPage'
+import MusicPlayer from './MusicPlayer'
 
 const useStyles = makeStyles((theme) => ({
     modal: {
@@ -29,8 +30,16 @@ function Room(props) {
     const classes = useStyles();
     const [ open, setOpen ] = useState(false)
     const [ spotifyAuthenticated, setSpotifyAuthenticated ] = useState(false)
+    const [ title, setTitle ] = useState('')
+    const [ artist, setArtist ] = useState('')
+    const [ id, setId ] = useState('')
+    const [ image, setImage ] = useState('')
+    const [ isPlaying, setIsplaying ] = useState(false)
+    const [ time, setTime ] = useState(0)
+    const [ duration, setDuration ] = useState(0)
+    const [ votes, setVotes ] = useState(0)
+    const [ votesRequired, setVotesRequired ] = useState(0)
 
-    
 
     const getRoomDetails = () => {
         fetch('/api/get-room' + "?code=" + roomCode)
@@ -39,7 +48,7 @@ function Room(props) {
                     props.leaveRoomCallback
                     props.history.push('/')
                 }
-                return  res.json()
+                return res.json()
                 })
             .then(data => {
                 setVotesToSkip(data.votes_to_skip),
@@ -56,7 +65,6 @@ function Room(props) {
             .then((response) => response.json())
             .then((data) => {
                 setSpotifyAuthenticated(data.status)
-                console.log(data.status, spotifyAuthenticated)
                 if(!data.status) {
                     fetch('/spotify/get-auth-url')
                         .then(response => response.json())
@@ -65,8 +73,37 @@ function Room(props) {
             })
     }
     
+    const getCurrentSong = () => {
+        fetch('/spotify/current-song')
+            .then(response => {
+                if (!response.ok) {
+                    return {}
+                } else {
+                    return response.json()
+                }
+            })
+            .then(data => {
+                setTitle(data.title)
+                setArtist(data.artist)
+                setId(data.id)
+                setImage(data.image_url)
+                setIsplaying(data.is_playing)
+                setTime(data.time)
+                setDuration(data.duration)
+                setVotes(data.votes)
+                setVotesRequired(data.votes_required)
+                // console.log(data)
+                // console.log(title)
+            })
+
+    }
+
     useEffect(() => {
         getRoomDetails()
+        const interval = setInterval(() => {
+            getCurrentSong()
+        }, 1000);
+        return () => clearInterval(interval);
     })
     
     const handleOpen = () => {
@@ -85,8 +122,6 @@ function Room(props) {
             })
     }
 
-    
-
     return (
         <div>
             <Grid container spacing={1}>
@@ -95,7 +130,7 @@ function Room(props) {
                         Code: {roomCode}
                     </Typography>
                 </Grid>
-                <Grid item xs={12} align='center'>
+                {/* <Grid item xs={12} align='center'>
                 <Typography variant="h4" component="h4">
                         Votes: {votesToSkip}
                     </Typography>
@@ -109,6 +144,21 @@ function Room(props) {
                 <Typography variant="h4" component="h4">
                         Host: {isHost.toString()}
                     </Typography>
+                </Grid> */}
+                <Grid item xs={8} align="center">  
+                    {title ?
+                        <MusicPlayer
+                            title={title}
+                            artist={artist}
+                            id={id}
+                            image_url={image}
+                            is_playing={isPlaying}
+                            time={time}
+                            duration={duration}
+                            votes={votes}
+                            votes_required={votesRequired}
+                        /> : null
+                    }
                 </Grid>
                 <Grid item xs={12} align='center'>
                     {isHost ? 
